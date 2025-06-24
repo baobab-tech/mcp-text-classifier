@@ -1,6 +1,6 @@
-# Text Classification MCP Server with HTTP Support
+# Text Classification MCP Server (Model2Vec)
 
-A Model Context Protocol (MCP) server that provides text classification functionality using static embeddings from Model2Vec (Minish Lab). **Now supports both stdio and HTTP transports!**
+A Model Context Protocol (MCP) server that provides text classification functionality using static embeddings from Model2Vec (Minish Lab).
 
 ## 🚀 Key Features
 
