@@ -176,8 +176,6 @@ def _add_single_category(category_name: str, description: str) -> Dict[str, Any]
         return {
             "success": True,
             "message": f"Added category '{category_name}' successfully",
-            "category": category_lower,
-            "description": description,
             "total_categories": len(categories)
         }
         
@@ -238,9 +236,7 @@ def batch_add_custom_categories(categories_data: List[Dict[str, str]]) -> str:
             if result.get("success"):
                 results.append({
                     "category": category_name,
-                    "status": "added",
-                    "message": result["message"],
-                    "description": description
+                    "status": "added"
                 })
                 added_count += 1
             else:
