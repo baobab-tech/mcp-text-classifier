@@ -1,0 +1,6 @@
+aiohttp>=3.12.13
+fastmcp>=2.9.0
+mcp[cli]>=1.9.4
+model2vec>=0.6.0
+numpy>=2.2.6
+scikit-learn>=1.7.0

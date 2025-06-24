@@ -22,10 +22,10 @@ A Model Context Protocol (MCP) server that provides text classification function
 ### Quick Setup
 ```bash
 # Install dependencies
-pip install "mcp[cli]" model2vec numpy scikit-learn
+pip install -r requirements.txt
 
 # Or with uv
-uv add "mcp[cli]" model2vec numpy scikit-learn
+uv sync 
 ```
 
 ## 🏃‍♂️ Running the Server
