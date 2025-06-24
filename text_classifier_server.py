@@ -204,6 +204,57 @@ def list_categories() -> str:
     return json.dumps(result, indent=2)
 
 @mcp.tool()
+def remove_categories(category_names: List[str]) -> str:
+    """
+    Remove one or multiple categories from the classification system.
+    
+    Args:
+        category_names: List of category names to remove
+    
+    Returns:
+        JSON string with removal results for each category
+    """
+    try:
+        results = []
+        removed_count = 0
+        
+        for category_name in category_names:
+            category_lower = category_name.lower()
+            
+            if category_lower in categories:
+                # Remove from both dictionaries
+                del categories[category_lower]
+                del category_descriptions[category_lower]
+                results.append({
+                    "category": category_name,
+                    "status": "removed",
+                    "message": f"Category '{category_name}' removed successfully"
+                })
+                removed_count += 1
+                logger.info(f"Removed category: {category_name}")
+            else:
+                results.append({
+                    "category": category_name,
+                    "status": "not_found",
+                    "message": f"Category '{category_name}' not found"
+                })
+        
+        return json.dumps({
+            "operation": "remove_categories",
+            "total_requested": len(category_names),
+            "removed_count": removed_count,
+            "remaining_categories": len(categories),
+            "results": results
+        }, indent=2)
+        
+    except Exception as e:
+        logger.error(f"Failed to remove categories: {e}")
+        return json.dumps({
+            "operation": "remove_categories",
+            "error": f"Failed to remove categories: {str(e)}"
+        })
+
+@mcp.tool()
 def batch_classify(texts: List[str], top_k: int = 1) -> str:
     """
     Classify multiple texts at once.
@@ -317,7 +368,7 @@ def initialize_server():
         setup_default_categories()
         
         logger.info(f"Server initialized with {len(categories)} categories")
-        logger.info("Available tools: classify_text, add_custom_category, list_categories, batch_classify")
+        logger.info("Available tools: classify_text, add_custom_category, list_categories, remove_categories, batch_classify")
         logger.info("Available resources: categories://list, model://info")
         logger.info("Available prompts: classification_prompt")
         

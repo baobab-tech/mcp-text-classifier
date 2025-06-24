@@ -134,6 +134,17 @@ add_custom_category("automotive", "Cars, vehicles, transportation")
 ### list_categories
 List all available categories and their descriptions.
 
+### remove_categories
+Remove one or multiple categories from the classification system.
+
+**Parameters:**
+- `category_names` (list): List of category names to remove
+
+**Example:**
+```python
+remove_categories(["automotive", "custom_category"])
+```
+
 ### batch_classify
 Classify multiple texts at once.
 
