@@ -141,6 +141,53 @@ def classify_text(text: str, top_k: int = 3) -> str:
         logger.error(f"Classification error: {e}")
         return json.dumps({"error": f"Classification failed: {str(e)}"})
 
+def _add_single_category(category_name: str, description: str) -> Dict[str, Any]:
+    """
+    Helper function to add a single category.
+    
+    Args:
+        category_name: Name of the new category
+        description: Description of the category to generate its embedding
+    
+    Returns:
+        Dictionary with operation result
+    """
+    if model is None:
+        return {"success": False, "error": "Model not loaded"}
+    
+    try:
+        category_lower = category_name.lower()
+        
+        # Check if category already exists
+        if category_lower in categories:
+            return {
+                "success": False,
+                "error": f"Category '{category_name}' already exists"
+            }
+        
+        # Generate embedding for the category description
+        embedding = model.encode([description])[0]
+        
+        # Add to categories
+        categories[category_lower] = embedding
+        category_descriptions[category_lower] = description
+        
+        logger.info(f"Added custom category: {category_name}")
+        return {
+            "success": True,
+            "message": f"Added category '{category_name}' successfully",
+            "category": category_lower,
+            "description": description,
+            "total_categories": len(categories)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to add category {category_name}: {e}")
+        return {
+            "success": False,
+            "error": f"Failed to add category: {str(e)}"
+        }
+
 @mcp.tool()
 def add_custom_category(category_name: str, description: str) -> str:
     """
@@ -153,33 +200,78 @@ def add_custom_category(category_name: str, description: str) -> str:
     Returns:
         JSON string with operation result
     """
-    if model is None:
-        return json.dumps({"error": "Model not loaded"})
+    result = _add_single_category(category_name, description)
+    return json.dumps(result, indent=2)
+
+@mcp.tool()
+def batch_add_custom_categories(categories_data: List[Dict[str, str]]) -> str:
+    """
+    Add multiple custom categories for classification in a single operation.
     
+    Args:
+        categories_data: List of dictionaries with 'name' and 'description' keys
+                        Example: [{"name": "music", "description": "Music, songs, artists, albums"}]
+    
+    Returns:
+        JSON string with batch operation results
+    """
     try:
-        # Generate embedding for the category description
-        embedding = model.encode([description])[0]
+        results = []
+        added_count = 0
         
-        # Add to categories
-        categories[category_name.lower()] = embedding
-        category_descriptions[category_name.lower()] = description
+        for category_data in categories_data:
+            if not isinstance(category_data, dict) or 'name' not in category_data or 'description' not in category_data:
+                results.append({
+                    "category_data": category_data,
+                    "status": "invalid",
+                    "message": "Category data must be a dictionary with 'name' and 'description' keys"
+                })
+                continue
+                
+            category_name = category_data['name']
+            description = category_data['description']
+            
+            # Call the helper function to add the category
+            result = _add_single_category(category_name, description)
+            
+            # Transform the result to match batch format
+            if result.get("success"):
+                results.append({
+                    "category": category_name,
+                    "status": "added",
+                    "message": result["message"],
+                    "description": description
+                })
+                added_count += 1
+            else:
+                # Handle error case or existing category
+                error_msg = result.get("error", "Unknown error")
+                if "already exists" in error_msg.lower():
+                    results.append({
+                        "category": category_name,
+                        "status": "exists",
+                        "message": f"Category '{category_name}' already exists"
+                    })
+                else:
+                    results.append({
+                        "category": category_name,
+                        "status": "error",
+                        "message": error_msg
+                    })
         
-        result = {
-            "success": True,
-            "message": f"Added category '{category_name}' successfully",
-            "category": category_name.lower(),
-            "description": description,
-            "total_categories": len(categories)
-        }
-        
-        logger.info(f"Added custom category: {category_name}")
-        return json.dumps(result, indent=2)
+        return json.dumps({
+            "operation": "batch_add_custom_categories",
+            "total_requested": len(categories_data),
+            "added_count": added_count,
+            "total_categories": len(categories),
+            "results": results
+        }, indent=2)
         
     except Exception as e:
-        logger.error(f"Failed to add category {category_name}: {e}")
+        logger.error(f"Batch add categories error: {e}")
         return json.dumps({
-            "success": False,
-            "error": f"Failed to add category: {str(e)}"
+            "operation": "batch_add_custom_categories",
+            "error": f"Batch operation failed: {str(e)}"
         })
 
 @mcp.tool()
@@ -368,7 +460,7 @@ def initialize_server():
         setup_default_categories()
         
         logger.info(f"Server initialized with {len(categories)} categories")
-        logger.info("Available tools: classify_text, add_custom_category, list_categories, remove_categories, batch_classify")
+        logger.info("Available tools: classify_text, add_custom_category, batch_add_custom_categories, list_categories, remove_categories, batch_classify")
         logger.info("Available resources: categories://list, model://info")
         logger.info("Available prompts: classification_prompt")
         
