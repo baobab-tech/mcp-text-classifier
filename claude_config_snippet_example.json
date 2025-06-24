@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "text-classifier": {
+      "command": "~/mcp-text-classifier/.venv/bin/python",
+      "args": ["~/mcp-text-classifier/text_classifier_server.py"],
+      "env": {}
+    }
+  }
+}

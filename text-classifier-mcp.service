@@ -1,0 +1,15 @@
+[Unit]
+Description=Text Classification MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/text-classifier-mcp
+ExecStart=/opt/text-classifier-mcp/.venv/bin/python run_http_server.py --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
