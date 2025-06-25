@@ -1,12 +1,33 @@
 # Text Classification MCP Server (Model2Vec)
 
-A Model Context Protocol (MCP) server that provides text classification functionality using static embeddings from Model2Vec (Minish Lab).
+**A powerful Model Context Protocol (MCP) server that provides comprehensive text classification tools using fast static embeddings from Model2Vec (Minish Lab).**
+
+## 🛠️ Complete MCP Tools & Resources
+
+This server provides **6 essential tools**, **2 resources**, and **1 prompt template** for text classification:
+
+### 🏷️ Classification Tools
+- **`classify_text`** - Classify single text with confidence scores  
+- **`batch_classify`** - Classify multiple texts simultaneously
+
+### 📝 Category Management Tools  
+- **`add_custom_category`** - Add individual custom categories
+- **`batch_add_custom_categories`** - Add multiple categories at once
+- **`list_categories`** - View all available categories  
+- **`remove_categories`** - Remove unwanted categories
+
+### 📊 Resources
+- **`categories://list`** - Access category list programmatically
+- **`model://info`** - Get model and system information
+
+### 💬 Prompt Templates
+- **`classification_prompt`** - Ready-to-use classification prompt template
 
 ## 🚀 Key Features
 
 - **Multiple Transports**: Supports stdio (local) and HTTP/SSE (remote) transports
 - **Fast Classification**: Uses efficient static embeddings from Model2Vec
-- **Predefined Categories**: 10 default categories including technology, business, health, etc.
+- **10 Default Categories**: Technology, business, health, sports, entertainment, politics, science, education, travel, food
 - **Custom Categories**: Add your own categories with descriptions
 - **Batch Processing**: Classify multiple texts at once
 - **Resource Endpoints**: Access category lists and model information
@@ -108,15 +129,31 @@ Similar to Claude Desktop, but check Cursor's MCP documentation for the exact co
 ## 🛠️ Available Tools
 
 ### classify_text
-Classify a single text into predefined categories.
+Classify a single text into predefined categories with confidence scores.
 
 **Parameters:**
 - `text` (string): The text to classify
 - `top_k` (int, optional): Number of top categories to return (default: 3)
 
+**Returns:** JSON with predictions, confidence scores, and category descriptions
+
 **Example:**
 ```python
 classify_text("Apple announced new AI features", top_k=3)
+```
+
+### batch_classify
+Classify multiple texts simultaneously for efficient processing.
+
+**Parameters:**
+- `texts` (list): List of texts to classify
+- `top_k` (int, optional): Number of top categories per text (default: 1)
+
+**Returns:** JSON with batch classification results
+
+**Example:**
+```python
+batch_classify(["Tech news", "Sports update", "Business report"], top_k=2)
 ```
 
 ### add_custom_category
@@ -126,13 +163,35 @@ Add a new custom category for classification.
 - `category_name` (string): Name of the new category
 - `description` (string): Description to generate the category embedding
 
+**Returns:** JSON with operation result
+
 **Example:**
 ```python
-add_custom_category("automotive", "Cars, vehicles, transportation")
+add_custom_category("automotive", "Cars, vehicles, transportation, automotive industry")
+```
+
+### batch_add_custom_categories
+Add multiple custom categories in a single operation for efficiency.
+
+**Parameters:**
+- `categories_data` (list): List of dictionaries with 'name' and 'description' keys
+
+**Returns:** JSON with batch operation results
+
+**Example:**
+```python
+batch_add_custom_categories([
+    {"name": "automotive", "description": "Cars, vehicles, transportation"},
+    {"name": "music", "description": "Music, songs, artists, albums, concerts"}
+])
 ```
 
 ### list_categories
 List all available categories and their descriptions.
+
+**Parameters:** None
+
+**Returns:** JSON with all categories and their descriptions
 
 ### remove_categories
 Remove one or multiple categories from the classification system.
@@ -140,31 +199,26 @@ Remove one or multiple categories from the classification system.
 **Parameters:**
 - `category_names` (list): List of category names to remove
 
+**Returns:** JSON with removal results for each category
+
 **Example:**
 ```python
 remove_categories(["automotive", "custom_category"])
 ```
 
-### batch_classify
-Classify multiple texts at once.
-
-**Parameters:**
-- `texts` (list): List of texts to classify
-- `top_k` (int, optional): Number of top categories per text (default: 1)
-
-**Example:**
-```python
-batch_classify(["Tech news", "Sports update", "Business report"], top_k=2)
-```
-
 ## 📚 Available Resources
 
-- `categories://list`: Get list of available categories
-- `model://info`: Get information about the loaded model
+- **`categories://list`**: Get list of available categories with metadata
+- **`model://info`**: Get information about the loaded Model2Vec model and system status
 
 ## 💬 Available Prompts
 
-- `classification_prompt`: Template for text classification tasks
+- **`classification_prompt`**: Template for text classification tasks with context and instructions
+
+**Parameters:**
+- `text` (string): The text to classify
+
+**Returns:** Formatted prompt for classification with available categories listed
 
 ## 🧪 Testing
 
