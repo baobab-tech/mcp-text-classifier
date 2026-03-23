@@ -26,6 +26,7 @@ This server provides **6 essential tools**, **2 resources**, and **1 prompt temp
 ## 🚀 Key Features
 
 - **Zero-install**: Just `uv run` — dependencies are declared inline (PEP 723)
+- **Multiple Transports**: Supports stdio (local), HTTP/SSE, and Streamable HTTP
 - **Fast Classification**: Uses efficient static embeddings from Model2Vec
 - **10 Default Categories**: Technology, business, health, sports, entertainment, politics, science, education, travel, food
 - **Custom Categories**: Add your own categories with descriptions
@@ -44,22 +45,49 @@ No separate install step needed — dependencies are declared inline in the scri
 
 ## 🏃‍♂️ Running the Server
 
-### Stdio Transport (Local/Default)
+### Stdio Transport (Default)
 ```bash
 uv run text_classifier_server.py
+```
+
+### HTTP/SSE Transport
+```bash
+# SSE on default port 8000
+uv run text_classifier_server.py --http
+
+# SSE on custom port
+uv run text_classifier_server.py --http 9000
+```
+
+### Streamable HTTP Transport
+```bash
+uv run text_classifier_server.py --streamable-http
 ```
 
 ## 🔧 Configuration
 
 ### For Claude Desktop
 
+#### Stdio Transport (Local)
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "text-classifier": {
       "command": "uv",
-      "args": ["run", "/Users/olivier/DEV/mcp-text-classifier/text_classifier_server.py"]
+      "args": ["run", "/path/to/text_classifier_server.py"]
+    }
+  }
+}
+```
+
+#### HTTP Transport (Remote)
+Start the server with `uv run text_classifier_server.py --http`, then add:
+```json
+{
+  "mcpServers": {
+    "text-classifier": {
+      "url": "http://localhost:8000/sse"
     }
   }
 }
@@ -185,7 +213,7 @@ uv run python -c "from model2vec import StaticModel; StaticModel.from_pretrained
 - **Similarity**: Cosine similarity between text and category embeddings
 - **Performance**: ~30MB model, fast inference with static embeddings
 - **Protocol**: MCP specification 2024-11-05
-- **Transport**: stdio
+- **Transports**: stdio, HTTP+SSE, Streamable HTTP
 
 ## 🤝 Contributing
 
