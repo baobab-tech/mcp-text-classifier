@@ -1,4 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "aiohttp>=3.12.13",
+#     "fastmcp>=2.9.0",
+#     "mcp[cli]>=1.9.4",
+#     "model2vec>=0.6.0",
+#     "numpy>=2.2.6",
+#     "scikit-learn>=1.7.0",
+# ]
+# ///
 """
 Text Classification MCP Server using Static Embeddings from Model2Vec
 
@@ -6,17 +17,8 @@ This MCP server provides text classification functionality using static embeddin
 from the Model2Vec library (Minish Lab). It allows users to classify text into
 predefined category buckets using efficient static embeddings.
 
-Requirements:
-- mcp[cli]
-- model2vec
-- numpy
-- scikit-learn
-
-Installation:
-pip install "mcp[cli]" model2vec numpy scikit-learn
-
 Usage:
-python text_classifier_server.py
+uv run text_classifier_server.py
 """
 
 import asyncio

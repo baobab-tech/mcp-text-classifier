@@ -25,106 +25,50 @@ This server provides **6 essential tools**, **2 resources**, and **1 prompt temp
 
 ## 🚀 Key Features
 
-- **Multiple Transports**: Supports stdio (local) and HTTP/SSE (remote) transports
+- **Zero-install**: Just `uv run` — dependencies are declared inline (PEP 723)
 - **Fast Classification**: Uses efficient static embeddings from Model2Vec
 - **10 Default Categories**: Technology, business, health, sports, entertainment, politics, science, education, travel, food
 - **Custom Categories**: Add your own categories with descriptions
 - **Batch Processing**: Classify multiple texts at once
 - **Resource Endpoints**: Access category lists and model information
 - **Prompt Templates**: Built-in prompts for classification tasks
-- **Production Ready**: Docker, nginx, systemd support
 
 ## 📋 Installation
 
 ### Prerequisites
 - Python 3.10+
-- `uv` package manager (recommended) or `pip`
+- [`uv`](https://docs.astral.sh/uv/) package manager
 
 ### Quick Setup
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Or with uv
-uv sync 
-```
+No separate install step needed — dependencies are declared inline in the script (PEP 723) and resolved automatically by `uv`.
 
 ## 🏃‍♂️ Running the Server
 
-### Option 1: Stdio Transport (Local/Traditional)
+### Stdio Transport (Local/Default)
 ```bash
-# Run with stdio (default - for Claude Desktop local config)
-python text_classifier_server.py
-
-# Or explicitly
-python text_classifier_server.py --stdio
-```
-
-### Option 2: HTTP Transport (Remote/Web)
-```bash
-# Run with HTTP transport on localhost:8000
-python text_classifier_server.py --http
-
-# Run on custom port
-python text_classifier_server.py --http 9000
-
-# Use the convenience script
-./start_server.sh http 8000
-```
-
-### Option 3: Using the HTTP Runner
-```bash
-# More options with the HTTP runner
-python run_http_server.py --transport http --host 127.0.0.1 --port 8000 --debug
+uv run text_classifier_server.py
 ```
 
 ## 🔧 Configuration
 
 ### For Claude Desktop
 
-#### Stdio Transport (Local)
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "text-classifier": {
-      "command": "python",
-      "args": ["path/to/text_classifier_server.py"],
-      "env": {}
+      "command": "uv",
+      "args": ["run", "/Users/olivier/DEV/mcp-text-classifier/text_classifier_server.py"]
     }
   }
 }
 ```
 
-#### HTTP Transport (Remote)
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "text-classifier-http": {
-      "url": "http://localhost:8000/sse",
-      "env": {}
-    }
-  }
-}
+### For Claude Code
+```bash
+claude mcp add text-classifier -- uv run /Users/olivier/DEV/mcp-text-classifier/text_classifier_server.py
 ```
-
-### For VS Code
-Add to `.vscode/mcp.json`:
-```json
-{
-  "servers": {
-    "text-classifier": {
-      "type": "sse",
-      "url": "http://localhost:8000/sse",
-      "description": "Text classification server using static embeddings"
-    }
-  }
-}
-```
-
-### For Cursor IDE
-Similar to Claude Desktop, but check Cursor's MCP documentation for the exact configuration path.
 
 ## 🛠️ Available Tools
 
@@ -222,110 +166,17 @@ remove_categories(["automotive", "custom_category"])
 
 ## 🧪 Testing
 
-### Test HTTP Server
-```bash
-# Test the HTTP server endpoints
-python test_http_client.py
-
-# Check server status
-./check_server.sh
-
-# Test with curl
-curl http://localhost:8000/sse
-```
-
 ### Test with MCP Inspector
 ```bash
-# For stdio transport
-mcp dev text_classifier_server.py
-
-# For HTTP transport (start server first)
-# Then connect MCP Inspector to http://localhost:8000/sse
+npx @modelcontextprotocol/inspector uv run text_classifier_server.py
 ```
-
-## 🐳 Docker Deployment
-
-### Basic Docker
-```bash
-# Build and run
-docker build -t text-classifier-mcp .
-docker run -p 8000:8000 text-classifier-mcp
-```
-
-### Docker Compose
-```bash
-# Basic deployment
-docker-compose up
-
-# With nginx reverse proxy
-docker-compose --profile production up
-```
-
-## 🚀 Production Deployment
-
-### Systemd Service
-```bash
-# Copy service file
-sudo cp text-classifier-mcp.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable text-classifier-mcp
-sudo systemctl start text-classifier-mcp
-```
-
-### Nginx Reverse Proxy
-The included `nginx.conf` provides:
-- HTTP/HTTPS termination
-- Proper SSE headers
-- Load balancing support
-- SSL configuration template
-
-## 🌐 Transport Comparison
-
-| Feature | Stdio Transport | HTTP Transport |
-|---------|----------------|----------------|
-| **Use Case** | Local integration | Remote/web access |
-| **Performance** | Fastest | Very fast |
-| **Setup** | Simple | Requires server |
-| **Scalability** | One client | Multiple clients |
-| **Network** | Local only | Network accessible |
-| **Security** | Process isolation | HTTP-based auth |
-| **Debugging** | MCP Inspector | HTTP tools + Inspector |
 
 ## 🔍 Troubleshooting
 
-### Common Issues
-
-1. **Server won't start**
-   ```bash
-   # Check if port is in use
-   lsof -i :8000
-   
-   # Try different port
-   python run_http_server.py --port 9000
-   ```
-
-2. **Claude Desktop connection fails**
-   ```bash
-   # Check server status
-   ./check_server.sh
-   
-   # Verify config file syntax
-   cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python -m json.tool
-   ```
-
-3. **Model download fails**
-   ```bash
-   # Manual model download
-   python -c "from model2vec import StaticModel; StaticModel.from_pretrained('minishlab/potion-base-8M')"
-   ```
-
-### Debug Mode
+### Model download fails
 ```bash
-# Enable debug logging
-python run_http_server.py --debug
-
-# Check logs
-tail -f logs/mcp_server.log
+# Manual model download
+uv run python -c "from model2vec import StaticModel; StaticModel.from_pretrained('minishlab/potion-base-8M')"
 ```
 
 ## 📖 Technical Details
@@ -334,7 +185,7 @@ tail -f logs/mcp_server.log
 - **Similarity**: Cosine similarity between text and category embeddings
 - **Performance**: ~30MB model, fast inference with static embeddings
 - **Protocol**: MCP specification 2024-11-05
-- **Transports**: stdio, HTTP+SSE, Streamable HTTP
+- **Transport**: stdio
 
 ## 🤝 Contributing
 
